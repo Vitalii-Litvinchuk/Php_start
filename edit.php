@@ -69,5 +69,6 @@ if (isset($_POST['edit'])) {
 </div>
 </div>
 <script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/axios.min.js"></script>
 </body>
 </html>

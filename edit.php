@@ -1,4 +1,16 @@
 <?php
+function RandomString()
+{
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $rand_string = '';
+    for ($i = 0; $i < 90; $i++)
+        $rand_string = $rand_string . $characters[rand(0, strlen($characters) - 1)];
+    return $rand_string;
+}
+
+?>
+
+<?php
 $conn = new PDO("mysql:host=localhost;dbname=local.com", "root", "");
 if (isset($_POST['btnEdit'])) {
     $id = (int)$_POST['btnEdit'];
@@ -21,9 +33,24 @@ if (isset($_POST['edit'])) {
     $name = $_POST['name'];
     $description = $_POST['description'];
 
-    $sql = "UPDATE `news` SET name=?, description=? where id=?;";
+    if ($_FILES["image"]['name'] != '') {
+        $image = '';
+        foreach ($conn->query("SELECT * FROM news WHERE id='$id'") as $row)
+            $image = $row['image'];
+        unlink('images/' . $image);
+
+        $sql = "UPDATE `news` SET name=?, description=?, image=? where id=?;";
+        $imageFileType = strtolower(pathinfo("uploads/" . basename($_FILES["image"]["name"]), PATHINFO_EXTENSION));
+        $imageName = RandomString() . "." . $imageFileType;
+        $upload = "C:/xampp/htdocs/local.com/images/" . $imageName;
+        move_uploaded_file($_FILES["image"]["tmp_name"], $upload);
+        $conn->prepare($sql)->execute([$name, $description, $imageName, $id]);
+    } else {
+        $sql = "UPDATE `news` SET name=?, description=? where id=?;";
+        $conn->prepare($sql)->execute([$name, $description, $id]);
+    }
+
 //  $sql = "UPDATE `news` SET name=" . $name . ", description=" . $description . ", image=" . $image . " where id=" . $id . ";";
-    $conn->prepare($sql)->execute([$name, $description, $id]);
     header("location: /");
 
     exit;
